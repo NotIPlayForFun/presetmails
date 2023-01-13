@@ -128,6 +128,8 @@ class PresetMail():
         varname_list = find_preset_vars(self.preset)
         return varname_list
     def get_metadata(self):
+        print("type in get_metadata")
+        #print(type(self.to))
         return self.from_, self.to, self.subject
     def configure_mail_data(self):
         _inLoop = True
@@ -165,6 +167,8 @@ class PresetMail():
                 i += 1
                 v = self.get_metadata()
                 val = v[option[1]]
+                print("type in val")
+                #print(type(val))
                 if type(val) == list:
                     value = val
                 else:
@@ -444,7 +448,7 @@ def main():
         if "from" in most_recent_preset:
             from_ = str(most_recent_preset["from"])
         if "to" in most_recent_preset:
-            to = str(most_recent_preset["to"])
+            to = most_recent_preset["to"]
         if "subject" in most_recent_preset:
             subject = str(most_recent_preset["subject"])
         if "variable_defs" in most_recent_preset:
@@ -506,6 +510,18 @@ def main():
         to = _to
     
     #initialize PresetMail object
+    #check if file already exists, if not, create it with template dict
+    try:
+        f = open(cfg.ABS_MAIL_PRESET_FILE, 'x')
+        #json_str = json.dumps(dict())
+        #f.write(json_str)
+        #OR
+        #json.dump(json.load(json_str), f)
+        #OR
+        f.close()
+        print(f"File {cfg.ABS_MAIL_PRESET_FILE} created. Please write your Mail-Preset in here using the instructions from the --readme option.")
+    except FileExistsError as e:
+        pass
     try:
         print("Loading in preset...")
         f = open(cfg.ABS_MAIL_PRESET_FILE, 'r')
@@ -569,6 +585,8 @@ def main():
         "smtp_server": _userdata["smtp_server"],
         "port": _userdata["port"]
     }
+    #print(type(mail.to))
+    print(mail.to)
     d = data.add_prev_maildata_preset(configured_maildata_preset)
 
 

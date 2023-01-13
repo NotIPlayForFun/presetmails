@@ -18,7 +18,7 @@ def sendmail_simple(FROM, TO, SUBJECT, TEXT, USERNAME, PASSWORD, SMTP_SERVER, PO
         print(f"SERVER: {server}")
         print(f'RESP: {resp}')
     except Exception as e:
-        mye.eprint(e, 'Could not connect to server using this input:', ('SMTP_HOST (mailserver)', SMTP_SERVER), ('PORT', PORT))
+        mye.eprint(e, 'Could not connect to server using this input:', ['SMTP_HOST (mailserver)', SMTP_SERVER], ['PORT', PORT])
         exit(1)        
 
     #secure connection with tls

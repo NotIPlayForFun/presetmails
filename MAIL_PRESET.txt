@@ -1,5 +1,0 @@
-my preset {var1}
-
-some other text {var1}s
-{var2}
-{var3}
