@@ -1,10 +1,9 @@
 import smtplib
 import ssl
 import my_error as mye
+import config as cfg
 
-DEFAULT_PORT = 0
-
-def sendmail_simple(FROM, TO, SUBJECT, TEXT, USERNAME, PASSWORD, SMTP_SERVER, PORT = DEFAULT_PORT):
+def sendmail_simple(FROM, TO, SUBJECT, TEXT, USERNAME, PASSWORD, SMTP_SERVER, PORT = cfg.DEFAULT_PORT):
     MESSAGE = f'''From: {FROM}\nTo: {TO}\nSubject: {SUBJECT}\n\n{TEXT}'''
 
     #if not SMTP_SERVER:

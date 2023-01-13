@@ -1,0 +1,9 @@
+{
+    "userdata": {
+        "smtp_server": "aaa",
+        "port": 587,
+        "mail_address": "dddd",
+        "username": "wwww",
+        "password": "dwdw"
+    }
+}

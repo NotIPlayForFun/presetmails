@@ -1,10 +1,5 @@
+my preset {var1}
 
-
-
-THIS IS 
-
-AN EXAMPLE
-
-HOLY SHIT
-
-
+some other text {var1}s
+{var2}
+{var3}
