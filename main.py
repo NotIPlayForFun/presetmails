@@ -7,6 +7,8 @@ import data
 import config as cfg
 import re
 import datetime
+import termcolor
+from termcolor import colored
 #print(cfg.abs_basedir)
 #print(cfg.MAIL_PRESET_FILE)
 #document mails sent in docs file with datetime
@@ -26,6 +28,7 @@ import datetime
 #make userdata setup automatic with template
 #add option to choose from previous presets
 #add option to choose save a preset and choose from saved presets
+#colored text
 
 #bugs (should be fixed):
 #SUBJECT Header is still in email
@@ -128,7 +131,7 @@ class PresetMail():
         varname_list = find_preset_vars(self.preset)
         return varname_list
     def get_metadata(self):
-        print("type in get_metadata")
+        #print("type in get_metadata")
         #print(type(self.to))
         return self.from_, self.to, self.subject
     def configure_mail_data(self):
@@ -167,7 +170,7 @@ class PresetMail():
                 i += 1
                 v = self.get_metadata()
                 val = v[option[1]]
-                print("type in val")
+                #print("type in val")
                 #print(type(val))
                 if type(val) == list:
                     value = val
@@ -181,7 +184,7 @@ class PresetMail():
                 if vardef[1] != -1:
                     print(f"{i:2}.\t{vardef[0]}: '{vardef[1]}'")            #already defined
                 else:
-                    print(f"{i:2}.\t{vardef[0]}: undefined aka '{{{vardef[0]}}}'")#value of -1 means undefined
+                    print(f"{i:2}.\t{vardef[0]}: undefined '{{{vardef[0]}}}'")#value of -1 means undefined
             '''for varname in self.get_preset_varnames():
                 printed = False
                 for vardef in self.variable_defs:
@@ -236,8 +239,8 @@ class PresetMail():
                     '''if ninp == "":
                         ninp = -1'''
                     vardef[1] = ninp
-                    print(vardef[1])
-                    print(self.relevant_variable_defs)
+                    #print(vardef[1])
+                    #print(self.relevant_variable_defs)
         return 0
 
 def text_with_line_prefix(text, prefix=" >|"):
@@ -257,7 +260,7 @@ def find_body_from_preset(preset):
             break
         len_firstline += 1
     firstline = preset.split("\n", 1)[0]
-    print(firstline)
+    #print(firstline)
     rex = "^SUBJECT\s*=\s*(.+)$"
     _subject = re.findall(rex, firstline)
     if len(_subject) > 0:
@@ -302,35 +305,52 @@ Also, did you hear about {thing}?
 
 With kind regards,
 {person2}
----------------------------------------------------------
-BASIC USAGE:
-1!  First, setup your email account using the --setup option.\n'''+
-f"2!  Then, write a preset in {cfg.MAIL_PRESET_FILE}"+'''
-Variables:
+---------------------------------------------------------\n'''+
+termcolor.colored(f"BASIC USAGE:", color="white", on_color="on_light_blue", attrs=["bold", "underline"])+
+"\n\n"+
+colored(f"1!", color="white", on_color="on_blue", attrs=["underline"])+colored("  First, setup your email account using the --setup option.\n",
+    color="light_blue", attrs=["bold"])+
+"\n"+
+colored(f"2!", color="white", on_color="on_blue", attrs=["underline"])+
+colored("  Then, write a preset in {cfg.MAIL_PRESET_FILE} (create it in the presetmails folder if it's not there already).\n",
+    color="light_blue")+
+colored(f"Using Variables:", color="light_blue", attrs=["bold", "underline"])+colored('''
     Write the parts that should differ from mail to mail, aka your variables, like so: {name of variable}
     If you wish to use curly braces elsewhere in your email, mark them with a preceding \"\\\".
-    You can then specify these variables when calling the program on the command line.
-    If left unspecified, the program will ask for the missing variables.
-Subject:
-    Optionally, you can declare the subject of your email in your preset like shown in the example.(You can also do this using a variable if u wish)
-    Firse choice for subject is always the optional argument [--subject] on the command line
-    '''+f"Second choice will be {cfg.MAIL_PRESET_FILE}\n"
-+f"    If neither is given, defaults to \"{cfg.DEFAULT_MAIL_SUBJECT}\"\n"+
-f"3!  Run {sys.argv[0]}. The easiest way to do this is to simply run the program with no arguments.\n"+
-f"---------------------------------------------------------"
-"\nHOWEVER, if you DO wish to specify some things already from the program call, you can do this like follows:\n"
+Optionally, you can declare the subject of your email in the first line (subject header)
+of your preset like shown in the example above. (You can use a variable in a subject header too)\n''',
+    color="light_blue")+
+"\n"+
+colored(f"3!", color="white", on_color="on_blue", attrs=["underline"])+
+colored("  Run the program. The simplest way to do this is to simply run the program with no arguments: python3 {sys.argv[0]}\n",
+color="light_blue")+
+f"---------------------------------------------------------"+
+colored('''
+Extended usage:''', color="yellow", attrs=["underline"])+
+"\n"+
+colored('''Optionally, you can specify some or all of the variables, recipients and subject
+ahead of time when calling the program on the command line using the optional arguments.''',
+    color="yellow")+
+"\n"+
+colored(f"This will preemptively set the values to whatever you choose, but they will still be changable during program runtime.",
+    color="light_red")+
+colored("\nIf you do wish to specify some things already from the program call, you can do this like follows:\n"
 ">Specifying the receiving_addresses argument (1 or more mail addresses seperated by commas, ignores whitspaces):\n"+
 f"\t>{sys.argv[0]} -to receiver1@example.com, receiver2@example.com\n"+ 
 ">Specifying the subject argument:\n"+
-f"\t>{sys.argv[0]} -s Email subject here\n"+
-">Specifying the variables argument (variable definitions seperated by commas, does NOT ignore leading or trailing whitespaces on the values assigned to the variables.\n"+
+f"\t>{sys.argv[0]} -s \"Email subject here\"\n"+
+f"    First choice for subject is always the optional argument [--subject] on the command line\n"+
+f"    Second choice will be {cfg.MAIL_PRESET_FILE}\n"+
+">Specifying the variables argument (variable definitions seperated by commas, does NOT ignore leading or trailing whitespaces on the values assigned to the variables.):\n"+
 #"If you're feeling advanced, you can use ascii stuff like \n here but not yet lmao"+
-f"\t>{sys.argv[0]} -v person1=Mr Fring, person2=Walter, reason=a Business inquiery, thing=the thing that happened\n"+
+f"\t>{sys.argv[0]} -v \"person1=Mr Fring, person2=Walter, reason=a Business inquiery, thing=the thing that happened\n\""+
 ">Such a program call could look something like this:\n"+
-f"\t>{sys.argv[0]} -to receiver1@example.com --vars person1=Mr Fring, "+
-            "person2=Walter, reason=a Business inquiery, thing=the thing that happened --subject This is my subject\n"+
-f"If you want to "+
-"\n(Make sure to scroll up for the entire readme)"
+f"\t>{sys.argv[0]} -to receiver1@example.com --vars \"person1=Mr Fring, "+
+            "person2=Walter, reason=a Business inquiery, thing=the thing that happened\" --subject \"This is my subject\"\n",
+    color="yellow")+
+colored(f"When using command line options, using \"\" for each argument (or all at once) is recommended for -v and -s, in order to not mess with whitespaces.",
+    color="light_red")+
+"\n(Make sure to scroll up for the entire readme, including example preset)"
         )
 
 def eval_mail_preset(filepath, *vars):
@@ -384,7 +404,7 @@ def main():
     
     #check if readme or setup
     for arg in sys.argv:    #(outdated comment, only if this check is before parser)so that other args can be optional when using setup or readme
-        print(f"arg:{arg}")
+        #print(f"arg:{arg}")
         if arg.lower() == '--readme':
             print_readme()
             exit(0)
@@ -440,7 +460,7 @@ def main():
     except Exception as e:
         mye.eprint(e, f"Something went wrong accessing \"previous_presets_list\" from {cfg.ABS_PREV_MAILDATA_PRESETS_FILE} with template {cfg.PREV_MAILDATA_PRESETS_TEMPLATE}")
         exit(1)
-    print(missing_previous_maildata_presets_items)
+    #print(missing_previous_maildata_presets_items)
     if "previous_presets_list" not in missing_previous_maildata_presets_items:
         previous_maildata_presets_list = data.get_data(cfg.ABS_PREV_MAILDATA_PRESETS_FILE, "previous_presets_list")
         
@@ -586,7 +606,7 @@ def main():
         "port": _userdata["port"]
     }
     #print(type(mail.to))
-    print(mail.to)
+    #print(mail.to)
     d = data.add_prev_maildata_preset(configured_maildata_preset)
 
 
@@ -602,6 +622,8 @@ def main():
     print(f"NEW TEXT=\n{mail.formatted_body}")'''
 
     
+    #print(mail.to)
+    #print(type(mail.to))
 
     errs = smtp.sendmail_simple(
         FROM=mail.from_,

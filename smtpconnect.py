@@ -4,7 +4,7 @@ import my_error as mye
 import config as cfg
 
 def sendmail_simple(FROM, TO, SUBJECT, TEXT, USERNAME, PASSWORD, SMTP_SERVER, PORT = cfg.DEFAULT_PORT):
-    MESSAGE = f'''From: {FROM}\nTo: {TO}\nSubject: {SUBJECT}\n\n{TEXT}'''
+    MESSAGE = f'''From: {FROM}\nTo: {', '.join(TO)}\nSubject: {SUBJECT}\n\n{TEXT}'''
 
     #if not SMTP_SERVER:
     #    sys.stderr.write("Please enter valid SMTP_SERVER host")

@@ -141,7 +141,7 @@ def get_data(filepath, *object_chain, create=False):
         #mye.eprint(e, f"Could not load data from file \"{cfg.ABS_APPDATA_FILE}\"")
         #exit(1)
         raise
-    print(object_chain)
+    #print(object_chain)
     if object_chain:
         out = data
         for obj in object_chain:
@@ -185,10 +185,13 @@ def get_maildata_presets(*object_chain):
         out = appdata
     return out
 def get_appdata(*object_chain, from_py_obj=None):
+    if object_chain:
+        print(f"Loading {object_chain[len(object_chain) - 1]}...")
+    else:
+        print(f"Loading appdata...")
     if from_py_obj:
         appdata = from_py_obj
     else:
-        print("Loading userdata..")
         #open the file in read mode
         try:
             f = open(cfg.ABS_APPDATA_FILE, 'r')
@@ -205,7 +208,7 @@ def get_appdata(*object_chain, from_py_obj=None):
             #mye.eprint(e, f"Could not load data from file \"{cfg.ABS_APPDATA_FILE}\"")
             #exit(1)
             raise
-    print(object_chain)
+    #print(object_chain)
     if object_chain:
         out = appdata
         for obj in object_chain:
@@ -257,7 +260,7 @@ def get_appdata(*object_chain, from_py_obj=None):
     print(item_default)'''
 
 def find_missing_data_in_json_dict(*object_chain, abs_filename, template, ):
-    print(f"Checking for any missing/corrupt data in {abs_filename}...")
+    print(f"Checking for any missing/corrupt data in {os.path.basename(abs_filename)}...")
     #check if file already exists, if not, create it with template dict
     try:
         f = open(abs_filename, 'x')

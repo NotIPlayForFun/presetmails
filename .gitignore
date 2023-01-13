@@ -2,3 +2,5 @@ __pycache__
 testing
 requirements.txt
 MAIL_PRESET.txt
+appdata.json
+prev_maildata_presets.json
