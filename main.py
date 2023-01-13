@@ -9,6 +9,8 @@ import re
 import datetime
 import termcolor
 from termcolor import colored
+from colorama import just_fix_windows_console
+just_fix_windows_console()
 #print(cfg.abs_basedir)
 #print(cfg.MAIL_PRESET_FILE)
 #document mails sent in docs file with datetime
@@ -35,6 +37,7 @@ from termcolor import colored
 #multiple variables for the same name show up in options
 #ascii encoded öäü etc.
 #extra print statement at configuration
+
 class PresetMail():
     '''PresetMail class containing relevant data aswell as the configure_mail_data method that handles configuration until ready to send
      
