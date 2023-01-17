@@ -1,2 +1,4 @@
 colorama==0.4.6 
 termcolor==2.2.0
+keyring==23.13.1
+cryptography==39.0.0

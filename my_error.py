@@ -1,17 +1,17 @@
 import sys
 import traceback
+from termcolor import colored
 
 def eprint(e, custom_e, vars = list()):
-    sys.stderr.write("--------------------------------ERROR--------------------------------\n")
-    sys.stderr.write(f'{custom_e}\n')
-    print(vars)
+    sys.stderr.write(colored("--------------------------------ERROR--------------------------------\n"))
+    sys.stderr.write(colored(f'{custom_e}\n', color="light_red"))
     for var in vars:
         sys.stderr.write(f'{var[0]}: {var[1]}\n')
     sys.stderr.write(f"--------------------------------Traceback:--------------------------------\n")
     sys.stderr.write(traceback.format_exc())
     sys.stderr.write(f"--------------------------------Exception raised:--------------------------------\n")
-    print(type(e))
-    print(e)
+    print(f"Exception type: {type(e)}")
+    print(f"Exception print: {e}")
 
 class MyE(Exception):
     def __init__(self, e, my_e_string, relevant_vars = list()):

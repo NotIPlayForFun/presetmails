@@ -10,6 +10,8 @@ import datetime
 import termcolor
 from termcolor import colored
 from colorama import just_fix_windows_console
+import getpass
+import utility as util
 just_fix_windows_console()
 #print(cfg.abs_basedir)
 #print(cfg.MAIL_PRESET_FILE)
@@ -37,6 +39,13 @@ just_fix_windows_console()
 #multiple variables for the same name show up in options
 #ascii encoded öäü etc.
 #extra print statement at configuration
+
+def myinput(text):
+    inp = input(colored(
+        text,
+        color="cyan"
+    ))
+    return inp
 
 class PresetMail():
     '''PresetMail class containing relevant data aswell as the configure_mail_data method that handles configuration until ready to send
@@ -71,6 +80,7 @@ class PresetMail():
         self.from_=from_
         self.to = to
         self.subject = subject
+        self.formatted_subject = format_preset_text(self.subject, variable_defs)
         self.preset = preset
         self.variable_defs = variable_defs
         self.relevant_variable_defs = list()  #list of vardefs whose varname appears in preset, value of int(-1) means UNDEFINED
@@ -122,13 +132,21 @@ class PresetMail():
             variable_defs = self.relevant_variable_defs
         self.formatted_preset = format_preset_text(preset, variable_defs)
         return self.formatted_preset
-    def update_formatted_body(self, preset=None, variable_defs=None):
-        if preset == None:
-            preset = self.preset
+    def update_formatted_body(self, preset_body=None, variable_defs=None):
+        #if preset == None:
+        #    preset = self.preset
+        if preset_body == None:
+            preset_body = self.preset_body
         if variable_defs == None:
             variable_defs = self.relevant_variable_defs
-        self.formatted_body = format_preset_text(self.preset_body, variable_defs)
+        self.formatted_body = format_preset_text(preset_body, variable_defs)
         return self.formatted_body
+    def update_formatted_subject(self, _subject=None, variable_defs=None):
+        if variable_defs == None:
+            variable_defs = self.relevant_variable_defs
+        if _subject == None:
+            _subject = self.subject
+        self.formatted_subject = format_preset_text(_subject, variable_defs)
     #def format_preset_text(preset, variable_defs):
     def get_preset_varnames(self):
         varname_list = find_preset_vars(self.preset)
@@ -153,6 +171,9 @@ class PresetMail():
                     relevant_vardefs[len(relevant_vardefs) - 1][1] = vardef[1]
                     break'''
         while _inLoop:
+
+            #display options
+
             print("\n================================Configuration================================")
             s = str()
             s += f"-> From: {self.from_}\n"
@@ -202,7 +223,7 @@ class PresetMail():
                 i += 1'''
             #handle input to select which value the user wants to change
             try:
-                inp = int(input(f"\nSelect a value to change [0-{i}]:"))
+                inp = int(myinput(f"\nSelect a value to change [0-{i}]:"))
             except ValueError as e:
                 print(f"--> Please enter a number in range 0-{i}")
                 continue
@@ -218,7 +239,7 @@ class PresetMail():
                     self.update_formatted_preset()
                     _inLoop = False
                 case 1: #handle self.to
-                    ninp = input(f"Please enter receiving mail addresses (can be multiple seperated by commas): ")
+                    ninp = myinput(f"Please enter receiving mail addresses (can be multiple seperated by commas): ")
                     _tos = ninp.split(",")
                     ninp_valid = True
                     for j, _to in enumerate(_tos):
@@ -232,13 +253,15 @@ class PresetMail():
                     print(_tos)
                     self.to = _tos
                 case 2: #handle self.subject
-                    ninp = input(f"Please enter email subject: ")
+                    ninp = myinput(f"Please enter email subject: ")
                     print(ninp)
                     self.subject = ninp
+                    self.update_formatted_subject()
+                    #self.formatted_subject = format_preset_text(self.subject, self.relevant_variable_defs)
                 case other: #handle variables
                     print(inp - len(metadata_options))
                     vardef = self.relevant_variable_defs[inp - len(metadata_options) - 1]
-                    ninp = input(f"Please enter definition for {{{vardef[0]}}}: ")
+                    ninp = myinput(f"Please enter definition for {{{vardef[0]}}}: ")
                     '''if ninp == "":
                         ninp = -1'''
                     vardef[1] = ninp
@@ -315,17 +338,17 @@ colored(f"1!", color="white", on_color="on_blue", attrs=["underline"])+colored("
     color="light_blue", attrs=["bold"])+
 "\n"+
 colored(f"2!", color="white", on_color="on_blue", attrs=["underline"])+
-colored("  Then, write a preset in {cfg.MAIL_PRESET_FILE} (create it in the presetmails folder if it's not there already).\n",
+colored(f"  Then, write a preset in {cfg.MAIL_PRESET_FILE} (create it in the presetmails folder if it's not there already).\n",
     color="light_blue")+
+#If you wish to use curly braces elsewhere in your email, mark them with a preceding \"\\\".
 colored(f"Using Variables:", color="light_blue", attrs=["bold", "underline"])+colored('''
     Write the parts that should differ from mail to mail, aka your variables, like so: {name of variable}
-    If you wish to use curly braces elsewhere in your email, mark them with a preceding \"\\\".
 Optionally, you can declare the subject of your email in the first line (subject header)
 of your preset like shown in the example above. (You can use a variable in a subject header too)\n''',
     color="light_blue")+
 "\n"+
 colored(f"3!", color="white", on_color="on_blue", attrs=["underline"])+
-colored("  Run the program. The simplest way to do this is to simply run the program with no arguments: python3 {sys.argv[0]}\n",
+colored(f"  Run the program. The simplest way to do this is to simply run the program with no arguments: python3 {sys.argv[0]}\n",
 color="light_blue")+
 f"---------------------------------------------------------"+
 colored('''
@@ -399,13 +422,35 @@ def get_variables_from_cli(argparse_variables):
     print(variable_defs)
     return variable_defs
 
+def check_modules(req_file):
+    util.checkprint("Checking for missing modules...")
+    missing_modules = list()
+    #read file
+    try:
+        f = open(req_file, 'r')
+    except Exception as e:
+        mye.eprint(e, f"Couldn't open requirements file at {req_file}")
+        return 1
+    rex = "(.+)==.+"
+    for line in f.readlines():
+        m = re.match(rex, line)
+        if m:
+            if m[1] not in sys.modules:
+                missing_modules.append(m[1])
+    return missing_modules
+        
 
 def main():
-    #print(sys.argv)
-
     #Argparse
     
+    missing_modules = check_modules(req_file=cfg.ABS_REQUIREMENTS_FILE)
+    if missing_modules:
+        print(colored(f"You appear to be missing the following modules: " + ", ".join(missing_modules), color="red"))
+        print(colored(f"You can install the required modules using the command \"pip install -r {cfg.REQUIREMENTS_FILE}\"", color="yellow"))
+        exit(1)
+
     #check if readme or setup
+    missing_userdata_list = data.find_missing_userdata(del_extra=True)
     for arg in sys.argv:    #(outdated comment, only if this check is before parser)so that other args can be optional when using setup or readme
         #print(f"arg:{arg}")
         if arg.lower() == '--readme':
@@ -417,7 +462,7 @@ def main():
 
 
     parser = argparse.ArgumentParser(description="Package for quickly sending different emails via the commandline using a pre-written template."
-                                                    " Use --readme for detailed usage.")
+                                                    " Run \"pip install -r requirements.txt\" to install required packages. Use --readme for detailed usage.")
     parser.add_argument("--README", help="Detailed usage and setup description",
                             action="store_true")
     parser.add_argument("--setup", help="Set up or change the mail provider and account the program should use",
@@ -440,29 +485,38 @@ def main():
     
     
     #check if userdata is set correctly, if not ask for it
-    missing_userdata_list = data.find_missing_userdata()
     if missing_userdata_list:
-        print("You seem to be missing some userdata. \nThis is necessary to connect to the mailing server and log into the account you wish to send the emails from."
-                "\nRun --setup to register data."
-                "\nRun --readme for detailed usage description"
-                "\nRun --help for list of commands.")
+        print()
+        print(colored(
+            "You seem to be missing some userdata. \nThis is necessary to connect to the mailing server and log into the account you wish to send the emails from."
+            "\nRun --setup to register data"
+            "\nRun --readme for detailed usage description"
+            "\nRun --help for list of commands"
+            ,color="yellow"
+            ))
         exit(1)
 
     _userdata = data.get_appdata("userdata")
+        
     
     #start defining everything needed for smtp.sendmail_simple
+
     #some relevant variables
     from_ = str()
     to = list()
     subject = str()
     variable_defs = list()
     _recent_port = int()
+
     #get any definitions from last program call
     try:
-        missing_previous_maildata_presets_items = data.find_missing_data_in_json_dict("previous_presets_list", abs_filename=cfg.ABS_PREV_MAILDATA_PRESETS_FILE, template=cfg.PREV_MAILDATA_PRESETS_TEMPLATE)
+        missing_previous_maildata_presets_items = data.find_missing_data_in_json_dict(
+            "previous_presets_list", abs_filename=cfg.ABS_PREV_MAILDATA_PRESETS_FILE, template=cfg.PREV_MAILDATA_PRESETS_TEMPLATE
+            )
     except Exception as e:
         mye.eprint(e, f"Something went wrong accessing \"previous_presets_list\" from {cfg.ABS_PREV_MAILDATA_PRESETS_FILE} with template {cfg.PREV_MAILDATA_PRESETS_TEMPLATE}")
         exit(1)
+
     #print(missing_previous_maildata_presets_items)
     if "previous_presets_list" not in missing_previous_maildata_presets_items:
         previous_maildata_presets_list = data.get_data(cfg.ABS_PREV_MAILDATA_PRESETS_FILE, "previous_presets_list")
@@ -512,7 +566,39 @@ def main():
         if len(maildata_presets) != 0:
             preset_to = maildata_presets["to"]'''
 
-    #get any definitions given in program call
+    #Load mail preset
+
+    #check if file already exists, if not, create it with template dict
+    try:
+        f = open(cfg.ABS_MAIL_PRESET_FILE, 'x')
+        #json_str = json.dumps(dict())
+        #f.write(json_str)
+        #OR
+        #json.dump(json.load(json_str), f)
+        #OR
+        f.close()
+        print(f"File {cfg.ABS_MAIL_PRESET_FILE} created. Please write your Mail-Preset in here using the instructions from the --readme option.")
+    except FileExistsError as e:
+        pass
+    try:
+        util.loadprint("Loading in preset...")
+        f = open(cfg.ABS_MAIL_PRESET_FILE, 'r')
+        preset = f.read()
+        f.close()
+    except Exception as e:
+        mye.eprint(e, f"Failed to open \"{cfg.ABS_MAIL_PRESET_FILE}\", likely missing file")
+        exit(1)
+    if not preset:
+        print(f"Empty preset at {cfg.ABS_MAIL_PRESET_FILE}")
+        exit(1)
+
+    #If subject in preset, overwrite  subject gotten from previous maildata
+    #print("finding subject from preset")
+    preset_subject = find_subject_from_preset(preset)
+    if preset_subject:
+        subject = preset_subject
+
+    #get any definitions given in program call (overwrite everything else)
     _to = args.receiving_addresses
     _subject = args.subject
     _variables = args.variables
@@ -533,29 +619,7 @@ def main():
         to = _to
     
     #initialize PresetMail object
-    #check if file already exists, if not, create it with template dict
-    try:
-        f = open(cfg.ABS_MAIL_PRESET_FILE, 'x')
-        #json_str = json.dumps(dict())
-        #f.write(json_str)
-        #OR
-        #json.dump(json.load(json_str), f)
-        #OR
-        f.close()
-        print(f"File {cfg.ABS_MAIL_PRESET_FILE} created. Please write your Mail-Preset in here using the instructions from the --readme option.")
-    except FileExistsError as e:
-        pass
-    try:
-        print("Loading in preset...")
-        f = open(cfg.ABS_MAIL_PRESET_FILE, 'r')
-        preset = f.read()
-        f.close()
-    except Exception as e:
-        mye.eprint(e, f"Failed to open \"{cfg.ABS_MAIL_PRESET_FILE}\", likely missing file")
-        exit(1)
-    if not preset:
-        print(f"Empty preset at {cfg.ABS_MAIL_PRESET_FILE}")
-        exit(1)
+    
     mail = PresetMail(from_=_userdata["mail_address"], to=to, subject=subject, preset=preset, variable_defs=variable_defs)
     
     #make PresetMail ask user for configuration
@@ -582,11 +646,11 @@ def main():
             print("\n================================CONFIRM FINAL MAIL================================")
             print(f"From: {mail.from_}")
             print(f"To: {mail.to}")
-            print(f"Subject: {mail.subject}")
+            print(f"Subject: '{mail.formatted_subject}'")
             print(f"Body:\n")
             print(f"{text_with_line_prefix(text=mail.formatted_body)}")
             try:
-                inp = input(f"\nCONFIRM SEND MAIL? [y/n]: ")
+                inp = myinput(f"\nCONFIRM SEND MAIL? [y/n]: ")
             except Exception as e:
                 print(f"--> Error processing input; Please enter y/n for confirmation")
                 continue
@@ -623,36 +687,58 @@ def main():
     print(f"PORT={port}")
     print(f"TEXT=\n{mail.formatted_preset}")
     print(f"NEW TEXT=\n{mail.formatted_body}")'''
-
-    
-    #print(mail.to)
-    #print(type(mail.to))
-
-    errs = smtp.sendmail_simple(
-        FROM=mail.from_,
-        TO=mail.to,
-        SUBJECT=mail.subject,
-        TEXT=mail.formatted_preset,
-        USERNAME=_userdata["username"],
-        PASSWORD=_userdata["password"],
-        SMTP_SERVER=_userdata["smtp_server"],
-        PORT=_userdata["port"]
-        #PORT=_userdata["port"]
-        )
-    
-    #errs = smtp.sendmail_simple('mysmithtest123@gmail.com', 'mysmithtest123@gmail.com', 'TESTSUBJECT NEW', 'THIS IS EXAMPLE TEXT', 'mysmithtest123@gmail.com', 'njwpejtgwypowkib',
-    #                                'smtp.gmail.com', 587)
-        
-
-    #confirm configuration
-    #send mail
-
+    global password
+    if _userdata["store_pw"] == True:
+        try:
+            password = data.get_password()
+        except:
+            password = None
+        if password == None:
+            print(
+                colored("Note: \"store password\" option set to True.", color="yellow", attrs=["underline"])+
+                colored(
+                "\nThis means you will only have to enter your mail password once, and the program"+
+                " will store it using basic encryption and your operating systems keyring backend."+
+                " If you wish to change this and manually enter your password each time"+
+                " you use the program, use the --setup option"
+                , color="yellow"
+                ))
+            password = getpass.getpass(colored(">Please deposit your mail providers password: ", color="cyan"))
+            data.set_password(pw=password)
+    else:
+        if not password:
+            print(
+                colored("Note: \"store password\" option set to False.", color="yellow", attrs=["underline"])+
+                colored(
+                "\nIf you wish to change this and have the program store your mail password"+
+                " (using basic encryption and your operating systems keyring backend),"+
+                " use the --setup option", color="yellow"))
+            password = getpass.getpass(colored(">Please enter your mail providers password: ", color="cyan"))
 
     #NEED: FROM, TO, SUBJECT, TEXT, USERNAME, PASSWORD, SMTP_SERVER, PORT = DEFAULT_PORT
-    #errs = smtp.sendmail_simple('mysmithtest123@gmail.com', 'mysmithtest123@gmail.com', 'TESTSUBJECT NEW', 'THIS IS EXAMPLE TEXT', 'mysmithtest123@gmail.com', 'njwpejtgwypowkib',
-     #                       'smtp.gmail.com', 587)
-
-    #print(errs)
+    errs = list()
+    try:
+        errs = smtp.sendmail_simple(
+            FROM=mail.from_,
+            TO=mail.to,
+            SUBJECT=mail.formatted_subject,
+            TEXT=mail.formatted_body,
+            USERNAME=_userdata["username"],
+            PASSWORD=password,
+            SMTP_SERVER=_userdata["smtp_server"],
+            PORT=_userdata["port"]
+            )
+    except Exception as e:
+        sys.stderr.write(colored(
+            "Something went wrong with sending the mail"
+            ,color="red"
+        ))
+        pass
+    if errs:
+        print(colored(
+            "Failed to send to the following recipients:\n"+
+            f"{errs}"
+        ),color="red")
 
 if __name__ == "__main__":
     phrase = f"Now running {os.path.basename(cfg.PROJECT_NAME)}..."
@@ -674,5 +760,30 @@ if __name__ == "__main__":
     print()
     #print(len("|                               Now running Pythonmailer...                              |"))
     #print(len(buf))
-    main()
-
+    password = str()
+    while True:
+        main()
+        _exit = False
+        _wrong_inp = True
+        while _wrong_inp:
+            inp = myinput(
+            colored(f"\n[{sys.argv[0]}]: ", color="light_cyan")+
+            #colored("", color="yellow")+
+            colored("Type \"", color="light_cyan")+
+            colored("exit", color="red", attrs=["bold"])+
+            colored("\" to exit, press ", color="light_cyan")+
+            colored("enter", color="green", attrs=["bold"])+
+            colored(" to go again: ", color="light_cyan")
+            )
+            print("lmao")
+            match inp.lower():
+                case "exit":
+                    _exit = True
+                    _wrong_inp = False
+                case "":
+                    _exit = False
+                    _wrong_inp = False
+                case other:
+                    wrong_inp = True
+        if _exit:
+            break
