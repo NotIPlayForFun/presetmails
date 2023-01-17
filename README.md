@@ -69,7 +69,7 @@ Here, you can set all the information the program needs to send your emails.
 
 ***Example preset:***
 >SUBJECT=This is an example preset ---> optional subject header, you can use variables here too
-Hello {person1}, --->variable named person1
+>Hello {person1}, --->variable named person1
 >
 >I am writing to you because of {reason}.
 >Also, did you hear about {thing}?
