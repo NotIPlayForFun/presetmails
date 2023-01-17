@@ -68,15 +68,17 @@ Here, you can set all the information the program needs to send your emails.
 **2. Then, write a preset in MAIL_PRESET.txt (create it in the presetmails folder if it's not there already).**
 
 ***Example preset:***
->SUBJECT=This is an example preset ---> optional subject header, you can use variables here too
->Hello {person1}, --->variable named person1
->
->I am writing to you because of {reason}.
->Also, did you hear about {thing}?
->
->See you soon,
->{person2}
+```
+SUBJECT=This is an example Subject ---> optional subject header, you can use variables here too
+Hello {person1}, --->variable named person1
 
+I am writing to you because of {reason}.
+
+Also, did you hear about {thing}?
+
+See you soon,
+{person2}
+```
 **3. Run the program.**
 ```
 python3 main.py
