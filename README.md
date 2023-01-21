@@ -5,11 +5,13 @@ Python package for quickly sending different emails via the commandline using a 
 ## Description
 
 This small project I've been working on allows the user to set a template in a textfile containing an email-preset.
+
 This preset can contain variables denoted by curly brackets {}, which can then be set to different values each time the program is executed.
+
 The email is then sent with the users mailing account.
 
-*Do keep in mind that this project is currently in alpha-alpha.*
-
+*Do keep in mind that this project is currently in alpha-alpha.
+Also feel free to open an issue if you encounter a bug/problem*
 ## Getting Started
 
 ### Dependencies
@@ -39,16 +41,6 @@ in the presetmails folder to install required libraries.
 ## Executing program
 
 Navigate into the presetmails folder using the command line.
-
-**Use --help for list of commands:**
-```
-Python main.py --help
-```
-**Use  --readme option for detailed description:**
-```
-Python main.py --readme
-```
-This will give you detailed instructions on how the program works.
 
 ### Getting started:
 
@@ -91,15 +83,26 @@ For more information, check the --readme</sub>
 
 ## Help
 
+**Use --help for list of commands:**
+```
+Python main.py --help
+```
+**Use  --readme option for detailed description:**
+```
+Python main.py --readme
+```
+This will give you detailed instructions on how the program works.
+
 God help you if something breaks.
 There are some useful error messages, so it should usually be clear why things aren't working.
+
 **If there's a bug, do feel free to open an issue :)**
 ## Authors
 
 Contributors names and contact info
 
-Jerrik S.
-mail: jerrik@jerrik.de
+* Jerrik S.
+	* mail: jerrik@jerrik.de
 
 ## Version History
 
