@@ -3,7 +3,7 @@ import ssl
 import my_error as mye
 import config as cfg
 
-def sendmail_simple(FROM, TO, SUBJECT, TEXT, USERNAME, PASSWORD, SMTP_SERVER, PORT = cfg.DEFAULT_PORT):
+def sendmail_simple(FROM, TO, SUBJECT, TEXT, USERNAME, PASSWORD, SMTP_SERVER, PORT = cfg.DEFAULT_PORT, TIMEOUT=10):
     MESSAGE = f'''From: {FROM}\nTo: {', '.join(TO)}\nSubject: {SUBJECT}\n\n{TEXT}'''.encode() #apparently cant just encode manually once
                                                                                             #you also wanna send html or other data or w/e
                                                                                             #so if you ever want to send more than just text,
@@ -16,7 +16,7 @@ def sendmail_simple(FROM, TO, SUBJECT, TEXT, USERNAME, PASSWORD, SMTP_SERVER, PO
 
     #establish first connection (unsecure)
     try:
-        server = smtplib.SMTP()                                 #changed to manual connect
+        server = smtplib.SMTP(timeout=TIMEOUT)                                 #changed to manual connect
         server._host = SMTP_SERVER
         resp = server.connect(host = SMTP_SERVER, port = PORT)
         print(f"SERVER: {server}")

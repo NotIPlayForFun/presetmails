@@ -33,6 +33,7 @@ just_fix_windows_console()
 #add option to choose from previous presets
 #add option to choose save a preset and choose from saved presets
 #colored text
+#add option to change variable marker
 
 #bugs (should be fixed):
 #SUBJECT Header is still in email
@@ -775,7 +776,6 @@ if __name__ == "__main__":
             colored("enter", color="green", attrs=["bold"])+
             colored(" to go again: ", color="light_cyan")
             )
-            print("lmao")
             match inp.lower():
                 case "exit":
                     _exit = True
