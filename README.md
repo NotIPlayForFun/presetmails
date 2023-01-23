@@ -78,7 +78,7 @@ python3 main.py
 
 <sub>Optionally, you can specify some or all of the variables, recipients and subject
 ahead of time when calling the program on the command line using the optional arguments.
-This is honestly kind of a useless feature right now, just run it program normally.
+This is honestly kind of a useless feature right now, just run the program normally.
 For more information, check the --readme</sub>
 
 ## Help
